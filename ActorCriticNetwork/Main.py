@@ -1,8 +1,10 @@
-from typing import List
+from typing import List, Tuple
 import gym
 import tensorflow as tf
 import numpy as np
 import argparse
+
+from tensorflow.python.keras.backend import dtype
 from ActorCritic import ActorCritic, env_step_wrapper
 
 parser = argparse.ArgumentParser('Choose way to run the Cart Pole')
@@ -43,6 +45,17 @@ elif args.train:
     # Create TensorFlow function that allows model to interact with step on environment
     def tf_env_step(action: tf.Tensor) -> List[tf.Tensor]:
         tf.numpy_function(env_step_wrapper(env), [action], [tf.float32, tf.int32, tf.int32])
+    # Create function that gathers information for a full episode of CartPole (from start to when done=True)
+    def run_episode(initial_state: tf.Tensor, model: tf.keras.Model, max_steps: int) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
+        # Create arrays to gather information
+        action_probs = tf.TensorArray(dtype=tf.float32, size=0, dynamic_size=True)
+        values = tf.TensorArray(dtype=tf.float32, size=0, dynamic_size=True)
+        rewards = tf.TensorArray(dtype=tf.float32, size=0, dynamic_size=True)
+        # Gather initial information
+        initial_state_shape = initial_state.shape()
+        state = initial_state # redefined for for loop
+
+
 # Watch the network balance the stick
 elif args.model:
     pass
